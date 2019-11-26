@@ -1,4 +1,5 @@
 const broadcastAddress = require('broadcast-address');
+const chalk = require('chalk');
 
 console.log("Sema_ticks")
 
@@ -6,7 +7,8 @@ var args = process.argv.slice(2);
 
 
 var PORT = 7243;
-var BROADCAST_ADDR = broadcastAddress('en0');
+var netInterface = args.length > 1 ? args[1] : "en0"
+var BROADCAST_ADDR = broadcastAddress(netInterface);
 var dgram = require('dgram');
 var server = dgram.createSocket("udp4");
 var hellomessage = Buffer.from("hi i'm " + args[0] + ".");
