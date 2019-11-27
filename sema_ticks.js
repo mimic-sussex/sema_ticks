@@ -91,7 +91,7 @@ client.on('message', function(message, rinfo) {
     }
   } else if (msgdata.c == "p") {
     if (msgdata.id != machineName) {
-      console.log("phase recv: " + msgdata.p);
+      // console.log("phase recv: " + msgdata.p);
       // console.log(wsclient);
       if (wsclient != null) {
         // console.log("phase send")
@@ -158,7 +158,7 @@ wss.on('connection', function(socket, req) {
         case "o":
           //phase
           // idname = machineName + request.i;
-          console.log("phase send: " + request.p);
+          // console.log("phase send: " + request.p);
           let msg = JSON.stringify({
             c: "p",
             id: machineName,
