@@ -32,15 +32,20 @@ server.bind(function() {
 
 function broadcastNew() {
   for (p in peers) {
+    console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
+    peers[p].timeout = peers[p].timeout - 1;
     if (peers[p].remote == 0) {
       // var hellomessage = Buffer.from("hi i'm " + p + ".");
       var hellomessage = JSON.stringify({c:"hi", "data":p});
       server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
         console.log("Sent '" + hellomessage + "'");
       });
+    }else{
+      //timeout for remote peers done here
+      if (peers[clockName].timeout <= 0) {
+        delete peers[clockName];
+      }
     }
-    console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
-    peers[p].timeout = peers[p].timeout - 1;
   }
 }
 
@@ -134,10 +139,8 @@ wss.on('connection', function(socket, req) {
           //phase
           idname = machineName + request.i;
           console.log("phase: " + request.p);
-          let msg = {c:"p", id:machineName, p:request.p};
-          // server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
-            // console.log("Sent '" + hellomessage + "'");
-          // });
+          let msg = JSON.stringify({c:"p", id:machineName, p:request.p});
+          server.send(msg, 0, msg.length, PORT, BROADCAST_ADDR);
           break;
       }
     } catch (e) {
