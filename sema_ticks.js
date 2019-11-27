@@ -12,40 +12,50 @@ var args = process.argv.slice(2);
 var machineName = args[0];
 
 var peers = {};
+var wsclient = null;
+var wsclientTimeout = 0;
 
 var PORT = 7243;
 var netInterface = args.length > 1 ? args[1] : "en0"
 var BROADCAST_ADDR = broadcastAddress(netInterface);
 var dgram = require('dgram');
-var server = dgram.createSocket({
+var udpserver = dgram.createSocket({
   type: "udp4",
   reuseAddr: true
-}); //todo: shared socket https://nodejs.org/api/dgram.html addMembership
-var hiRegex = /hi i'm [A-Za-z0-9]+\./;
+});
+// var hiRegex = /hi i'm [A-Za-z0-9]+\./;
+
 
 ////broadcast
 
-server.bind(function() {
-  server.setBroadcast(true);
+udpserver.bind(function() {
+  udpserver.setBroadcast(true);
   setInterval(broadcastNew, 1000);
 });
 
 function broadcastNew() {
+  // var hellomessage = Buffer.from("hi i'm " + p + ".");
+  var hellomessage = JSON.stringify({
+    c: "hi",
+    "data": machineName
+  });
+  udpserver.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
+    console.log("Sent '" + hellomessage + "'");
+  });
   for (p in peers) {
     console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
     peers[p].timeout = peers[p].timeout - 1;
-    if (peers[p].remote == 0) {
-      // var hellomessage = Buffer.from("hi i'm " + p + ".");
-      var hellomessage = JSON.stringify({c:"hi", "data":p});
-      server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
-        console.log("Sent '" + hellomessage + "'");
-      });
-    }else{
+    // if (peers[p].remote == 0) {
+    // } else {
       //timeout for remote peers done here
-      if (peers[p].timeout <= 0) {
-        delete peers[p];
-      }
+    if (peers[p].timeout <= 0) {
+      delete peers[p];
     }
+    // }
+  }
+  //needed?
+  if (wsclientTimeout-- <= 0) {
+    wsclient = null;
   }
 }
 
@@ -84,6 +94,18 @@ client.on('message', function(message, rinfo) {
         "remote": 1
       }; //timeout in secs
     }
+  } else if (msgdata.c == "p") {
+    // for(cl in peers) {
+    //   if (peers[cl].remote==0) {
+    if (wsclient != null) {
+      let phasedata = {
+        "r": "o",
+        "v": 0,
+        "i": 1
+      };
+      wsclient.send(JSON.stringify(phasedata));
+    }
+    // ?      }
   }
 });
 
@@ -101,26 +123,28 @@ var wss = new websocket.Server({
 
 wss.on('connection', function(socket, req) {
   console.log("Connection from Sema");
-
+  wsclient = socket;
   socket.on('message', function incoming(message) {
     console.log(chalk.magenta('received:' + message));
     try {
       let request = JSON.parse(message);
       console.log(request);
       switch (request.c) {
-        case "i":
-          let idresponse = {
-            "r": "i",
-            "n": id++
-          };
-          console.log(idresponse);
-          socket.send(JSON.stringify(idresponse));
-          idname = machineName + idresponse.n;
-          peers[idname] = {
-            "timeout": timeout,
-            "remote": 0
-          }; //timeout in secs
-          break;
+        // case "i":
+        //   let idresponse = {
+        //     "r": "i",
+        //     "n": id++
+        //   };
+        //   console.log(idresponse);
+        //   socket.send(JSON.stringify(idresponse));
+        //   idname = machineName + idresponse.n;
+        //   // peers[idname] = {
+        //   //   "timeout": timeout,
+        //   //   "remote": 0,
+        //   //   "wssocket":socket
+        //   // }; //timeout in secs
+        //   wsclient = socket;
+        //   break;
         case "q":
           let peerresponse = {
             "r": "p",
@@ -131,16 +155,22 @@ wss.on('connection', function(socket, req) {
           break;
         case "h":
           //ping
-          idname = machineName + request.i;
-          peers[idname].timeout = timeout;
+          // idname = machineName + request.i;
+          // peers[idname].timeout = timeout;
           console.log("ping: " + idname);
+          wsclientTimeout = timeout;
           break;
         case "o":
           //phase
           idname = machineName + request.i;
           console.log("phase: " + request.p);
-          let msg = JSON.stringify({c:"p", id:machineName, p:request.p});
-          server.send(msg, 0, msg.length, PORT, BROADCAST_ADDR);
+          let msg = JSON.stringify({
+            c: "p",
+            id: machineName,
+            p: request.p
+          });
+          //set out over udp broadcast
+          udpserver.send(msg, 0, msg.length, PORT, BROADCAST_ADDR);
           break;
       }
     } catch (e) {
