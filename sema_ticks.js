@@ -42,8 +42,8 @@ function broadcastNew() {
       });
     }else{
       //timeout for remote peers done here
-      if (peers[clockName].timeout <= 0) {
-        delete peers[clockName];
+      if (peers[p].timeout <= 0) {
+        delete peers[p];
       }
     }
   }
