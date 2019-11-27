@@ -4,11 +4,12 @@ const websocket = require("ws");
 
 const timeout = 10;
 
-let id=0;
+let id = 0;
 
 console.log("Sema_ticks")
 
 var args = process.argv.slice(2);
+var machineName = args[0];
 
 var peers = {};
 
@@ -30,16 +31,16 @@ server.bind(function() {
 });
 
 function broadcastNew() {
-  var hellomessage = Buffer.from("hi i'm " + args[0] + ".");
-  server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
-    console.log("Sent '" + hellomessage + "'");
-  });
   for (p in peers) {
-    console.log(chalk.green(p + "(" + peers[p].timeout+ ", "+ peers[p].remote + ")"));
-    peers[p].timeout = peers[p].timeout - 1;
-    if (peers[p].timeout == 0) {
-      delete peers[p];
+    if (peers[p].remote == 0) {
+      // var hellomessage = Buffer.from("hi i'm " + p + ".");
+      var hellomessage = JSON.stringify({c:"hi", "data":p});
+      server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
+        console.log("Sent '" + hellomessage + "'");
+      });
     }
+    console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
+    peers[p].timeout = peers[p].timeout - 1;
   }
 }
 
@@ -58,15 +59,34 @@ client.on('listening', function() {
 
 client.on('message', function(message, rinfo) {
   console.log('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
-  var match = message.toString().match(hiRegex);
-  var clockName = match[0].substr(7, match[0].length - 8);
-  if (match != null) {
-    // console.log("message match: " + clockName);
-    peers[clockName] = {"timeout":timeout, "remote":1}; //timeout in secs
+  msgdata = JSON.parse(message);
+  // let match = message.toString().match(hiRegex);
+  if (msgdata.c == "hi") {
+    // let clockName = match[0].substr(7, match[0].length - 8);
+    let clockName = msgdata.data;
+    console.log("clock name: " + clockName);
+    if (clockName in peers) {
+      if (peers[clockName].remote) {
+        peers[clockName].timeout = timeout;
+      } else {
+        if (peers[clockName].timeout <= 0) {
+          delete peers[clockName];
+        }
+      }
+    } else {
+      peers[clockName] = {
+        "timeout": timeout,
+        "remote": 1
+      }; //timeout in secs
+    }
   }
 });
 
 client.bind(PORT);
+
+
+
+
 
 //sema comms
 
@@ -82,19 +102,42 @@ wss.on('connection', function(socket, req) {
     try {
       let request = JSON.parse(message);
       console.log(request);
-      switch(request.c) {
+      switch (request.c) {
         case "i":
-          let idresponse = {"r":"i", "n":id++};
+          let idresponse = {
+            "r": "i",
+            "n": id++
+          };
           console.log(idresponse);
           socket.send(JSON.stringify(idresponse));
-          idname = clockName + idresponse.n;
-          peers[idname] = {"timeout":timeout, "remote":0}; //timeout in secs
-
+          idname = machineName + idresponse.n;
+          peers[idname] = {
+            "timeout": timeout,
+            "remote": 0
+          }; //timeout in secs
           break;
         case "q":
-          let peerresponse = {"r":"p", "n":Object.keys(peers).length};
+          let peerresponse = {
+            "r": "p",
+            "n": Object.keys(peers).length
+          };
           console.log(peerresponse);
           socket.send(JSON.stringify(peerresponse));
+          break;
+        case "h":
+          //ping
+          idname = machineName + request.i;
+          peers[idname].timeout = timeout;
+          console.log("ping: " + idname);
+          break;
+        case "o":
+          //phase
+          idname = machineName + request.i;
+          console.log("phase: " + request.p);
+          let msg = {c:"p", id:machineName, p:request.p};
+          // server.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
+            // console.log("Sent '" + hellomessage + "'");
+          // });
           break;
       }
     } catch (e) {
