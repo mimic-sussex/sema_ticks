@@ -91,8 +91,8 @@ client.on('message', function(message, rinfo) {
     }
   } else if (msgdata.c == "p") {
     if (msgdata.id != machineName) {
-      console.log("phase in");
-      console.log(wsclient);
+      // console.log("phase in");
+      // console.log(wsclient);
       if (wsclient != null) {
         console.log("phase send")
         let phasedata = {
