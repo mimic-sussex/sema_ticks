@@ -4,7 +4,7 @@ const websocket = require("ws");
 
 const timeout = 10;
 
-let id = 0;
+// let id = 0;
 
 console.log("Sema_ticks")
 
@@ -39,7 +39,7 @@ function broadcastNew() {
     "data": machineName
   });
   udpserver.send(hellomessage, 0, hellomessage.length, PORT, BROADCAST_ADDR, function() {
-    console.log("Sent '" + hellomessage + "'");
+    // console.log("Sent '" + hellomessage + "'");
   });
   for (p in peers) {
     console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
@@ -68,13 +68,13 @@ client.on('listening', function() {
 });
 
 client.on('message', function(message, rinfo) {
-  console.log('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
+  // console.log('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
   msgdata = JSON.parse(message);
   // let match = message.toString().match(hiRegex);
   if (msgdata.c == "hi") {
     // let clockName = match[0].substr(7, match[0].length - 8);
     let clockName = msgdata.data;
-    console.log("clock name: " + clockName);
+    // console.log("clock name: " + clockName);
     if (clockName in peers) {
       if (peers[clockName].remote) {
         peers[clockName].timeout = timeout;
@@ -94,7 +94,7 @@ client.on('message', function(message, rinfo) {
       // console.log("phase in");
       // console.log(wsclient);
       if (wsclient != null) {
-        console.log("phase send")
+        // console.log("phase send")
         let phasedata = {
           "r": "o",
           "v": 0,
@@ -122,10 +122,9 @@ wss.on('connection', function(socket, req) {
   console.log("Connection from Sema");
   wsclient = socket;
   socket.on('message', function incoming(message) {
-    console.log(chalk.magenta('received:' + message));
+    // console.log(chalk.magenta('received:' + message));
     try {
       let request = JSON.parse(message);
-      console.log(request);
       switch (request.c) {
         // case "i":
         //   let idresponse = {
@@ -147,7 +146,7 @@ wss.on('connection', function(socket, req) {
             "r": "p",
             "n": Object.keys(peers).length
           };
-          console.log(peerresponse);
+          // console.log(peerresponse);
           socket.send(JSON.stringify(peerresponse));
           break;
         // case "h":
@@ -158,7 +157,7 @@ wss.on('connection', function(socket, req) {
         //   break;
         case "o":
           //phase
-          idname = machineName + request.i;
+          // idname = machineName + request.i;
           // console.log("phase: " + request.p);
           let msg = JSON.stringify({
             c: "p",
