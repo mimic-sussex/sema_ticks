@@ -13,7 +13,6 @@ var machineName = args[0];
 
 var peers = {};
 var wsclient = null;
-var wsclientTimeout = 0;
 
 var PORT = 7243;
 var netInterface = args.length > 1 ? args[1] : "en0"
@@ -47,15 +46,11 @@ function broadcastNew() {
     peers[p].timeout = peers[p].timeout - 1;
     // if (peers[p].remote == 0) {
     // } else {
-      //timeout for remote peers done here
+    //timeout for remote peers done here
     if (peers[p].timeout <= 0) {
       delete peers[p];
     }
     // }
-  }
-  //needed?
-  if (wsclientTimeout-- <= 0) {
-    wsclient = null;
   }
 }
 
@@ -95,17 +90,19 @@ client.on('message', function(message, rinfo) {
       }; //timeout in secs
     }
   } else if (msgdata.c == "p") {
-    // for(cl in peers) {
-    //   if (peers[cl].remote==0) {
-    if (wsclient != null) {
-      let phasedata = {
-        "r": "o",
-        "v": 0,
-        "i": 1
-      };
-      wsclient.send(JSON.stringify(phasedata));
+    if (msgdata.id != machineName) {
+      console.log("phase in");
+      console.log(wsclient);
+      if (wsclient != null) {
+        console.log("phase send")
+        let phasedata = {
+          "r": "o",
+          "v": 0,
+          "i": 1
+        };
+        wsclient.send(JSON.stringify(phasedata));
+      }
     }
-    // ?      }
   }
 });
 
@@ -153,17 +150,16 @@ wss.on('connection', function(socket, req) {
           console.log(peerresponse);
           socket.send(JSON.stringify(peerresponse));
           break;
-        case "h":
-          //ping
-          // idname = machineName + request.i;
-          // peers[idname].timeout = timeout;
-          console.log("ping: " + idname);
-          wsclientTimeout = timeout;
-          break;
+        // case "h":
+        //   //ping
+        //   // idname = machineName + request.i;
+        //   // peers[idname].timeout = timeout;
+        //   console.log("ping: " + idname);
+        //   break;
         case "o":
           //phase
           idname = machineName + request.i;
-          console.log("phase: " + request.p);
+          // console.log("phase: " + request.p);
           let msg = JSON.stringify({
             c: "p",
             id: machineName,
