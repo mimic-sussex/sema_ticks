@@ -6,7 +6,7 @@ const timeout = 10;
 
 // let id = 0;
 
-console.log(chalk.purple("Sema_ticks"))
+console.log(chalk.red("Sema_ticks"))
 
 var args = process.argv.slice(2);
 var machineName = args[0];
@@ -84,9 +84,11 @@ client.on('message', function(message, rinfo) {
         }
       }
     } else {
+      let peerID = Object.keys(peers).length;
       peers[clockName] = {
         "timeout": timeout,
-        "remote": 1
+        "remote": 1,
+        "id": peerID
       }; //timeout in secs
     }
   } else if (msgdata.c == "p") {
@@ -98,7 +100,7 @@ client.on('message', function(message, rinfo) {
         let phasedata = {
           "r": "o",
           "v": msgdata.p,
-          "i": 1
+          "i": peers[msgdata.id].id
         };
         wsclient.send(JSON.stringify(phasedata));
       }
