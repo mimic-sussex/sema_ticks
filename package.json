@@ -1,0 +1,25 @@
+{
+  "name": "sema_ticks",
+  "version": "1.0.0",
+  "description": "clock sharing for sema",
+  "main": "sema_ticks.js",
+  "dependencies": {
+    "broadcast-address": "^1.0.2",
+    "chalk": "^3.0.0",
+    "ws": "^7.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node sema_ticks.js luuma"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mimic-sussex/sema_ticks.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mimic-sussex/sema_ticks/issues"
+  },
+  "homepage": "https://github.com/mimic-sussex/sema_ticks#readme"
+}
