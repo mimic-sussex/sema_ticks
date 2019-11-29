@@ -54,11 +54,21 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
+# Package manager lock files
+yarn.lock
+
+
 # dotenv environment variables file
 .env
 
 # next.js build output
 .next
 
-# test files
-tests/
+.vscode
+.vscode/*
+.vscode/
+.DS_Store
+public/*bundle.*
+package-lock.json
+yarn.lock
+public/

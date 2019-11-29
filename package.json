@@ -10,7 +10,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node sema_ticks.js luuma"
+    "luuma": "node sema_ticks.js luuma",
+    "frantic0": "node sema_ticks.js frantic0",
+    "thor": "node sema_ticks.js thor"
   },
   "repository": {
     "type": "git",
