@@ -6,7 +6,7 @@ const timeout = 10;
 
 // let id = 0;
 
-console.log("Sema_ticks")
+console.log(chalk.purple("Sema_ticks"))
 
 var args = process.argv.slice(2);
 var machineName = args[0];
