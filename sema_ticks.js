@@ -83,13 +83,13 @@ client.on('message', function(message, rinfo) {
     let clockName = msgdata.data;
     // console.log("clock name: " + clockName);
     if (clockName in peers) {
-      if (peers[clockName].remote) {
-        peers[clockName].timeout = timeout;
-      } else {
-        if (peers[clockName].timeout <= 0) {
-          delete peers[clockName];
-        }
+      // if (peers[clockName].remote) {
+      peers[clockName].timeout = timeout;
+      // } else {
+      if (peers[clockName].timeout <= 0) {
+        delete peers[clockName];
       }
+      // }
     } else {
       let peerID = Object.keys(peers).length;
       peers[clockName] = {
