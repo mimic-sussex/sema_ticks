@@ -42,7 +42,7 @@ function broadcastNew() {
     // console.log("Sent '" + hellomessage + "'");
   });
   for (p in peers) {
-    console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ")"));
+    console.log(chalk.green(p + "(" + peers[p].timeout + ", " + peers[p].remote + ", " + peers[p].id + ")"));
     peers[p].timeout = peers[p].timeout - 1;
     // if (peers[p].remote == 0) {
     // } else {
@@ -60,6 +60,13 @@ var client = dgram.createSocket({
   type: "udp4",
   reuseAddr: true
 });
+
+peers[machineName] = {
+  "timeout": 10,
+  "remote": 0,
+  "id": 0
+}; //timeout in secs
+
 
 client.on('listening', function() {
   var address = client.address();
@@ -93,10 +100,10 @@ client.on('message', function(message, rinfo) {
     }
   } else if (msgdata.c == "p") {
     if (msgdata.id != machineName) {
-      // console.log("phase recv: " + msgdata.p);
+      // console.log("phase recv: " + msgdata.p)
+      // console.log(peers);
       // console.log(wsclient);
       if (wsclient != null) {
-        // console.log("phase send")
         let phasedata = {
           "r": "o",
           "v": msgdata.p,
