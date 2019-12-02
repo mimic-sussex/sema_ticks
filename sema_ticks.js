@@ -100,7 +100,7 @@ client.on('message', function(message, rinfo) {
     }
   } else if (msgdata.c == "p") {
     if (msgdata.id != machineName) {
-      console.log("phase recv: " + msgdata.p);
+      // console.log("phase recv: " + msgdata.p);
       // console.log(peers);
       // console.log(wsclient);
       if (wsclient != null) {
